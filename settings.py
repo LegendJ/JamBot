@@ -21,6 +21,7 @@ roll_folder = 'data/' + shift_folder + 'indroll' + subfolder
 histo_folder2 = 'data/' + shift_folder + 'histo' + subfolder
 chords_folder = 'data/' + shift_folder + 'chords' + subfolder
 chords_index_folder = 'data/' + shift_folder + 'chord_index' + subfolder
+note_index_folder = 'data/' + shift_folder + 'note_index' + subfolder
 song_histo_folder = 'data/' + shift_folder + 'song_histo' + subfolder
 
 
@@ -39,12 +40,16 @@ song_histo_folder = 'data/' + shift_folder + 'song_histo' + subfolder
 
 dict_path = 'data/'
 chord_dict_name = 'chord_dict.pickle'
-index_dict_name = 'index_dict.pickle'
+chord_index_dict_name = 'chord_index_dict.pickle'
+
+note_dict_name = 'note_dict.pickle'
+note_index_dict_name = 'note_index_dict.pickle'
 
 if shifted:
     chord_dict_name = 'chord_dict_shifted.pickle'
-    index_dict_name = 'index_dict_shifted.pickle'
-
+    chord_index_dict_name = 'chord_index_dict_shifted.pickle'
+    note_dict_name = 'note_dict_shifted.pickle'
+    note_index_dict_name = 'note_index_dict_shifted.pickle'
 
 # Specifies the method how to add the chord information to the input vector
 # 'embed' uses the chord embedding of the chord model
@@ -66,6 +71,7 @@ low_crop = 24#24
 num_notes = 128
 new_num_notes = high_crop - low_crop
 chord_embedding_dim = 10
+note_embedding_dim = 88
 
 #double_sample_chords = False
 double_sample_notes = True
@@ -93,10 +99,10 @@ chord_n = 3
 key_n = 7
 # Chord Vocabulary size
 num_chords = 100
-
+note_vocab_size = 1000
 if shifted:
     num_chords = 50
-
+    note_vocab_size = 500
 UNK = '<unk>'
 
 

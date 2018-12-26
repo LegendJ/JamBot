@@ -150,8 +150,33 @@ def save_index_from_chords(chords_folder,chords_index_folder):
 
 def get_chord_dict():
     chord_to_index = pickle.load(open(dict_path + chord_dict_name, 'rb'))
-    index_to_chord = pickle.load(open(dict_path + index_dict_name, 'rb'))
+    index_to_chord = pickle.load(open(dict_path + chord_index_dict_name, 'rb'))
     return chord_to_index, index_to_chord
+
+def save_idx_from_notes(roll_folder, note_index_folder):
+    note_to_index,index_to_note = get_note_dict()
+    for path, _, files in os.walk(roll_folder):
+        for name in files:
+            _path = path.replace('\\', '/') + '/'
+            _name = name.replace('\\', '/')
+            notes = pickle.load(open(_path + _name, 'rb'))
+            note_index=[]
+            for note in notes:
+                if note in note_to_index :
+                    note_index.append(note_to_index[note])
+                else:
+                    note_index.append(note_to_index[UNK])
+            ## save index to target_path
+            target_path = note_index_folder
+            if not os.path.exists(target_path):
+                os.makedirs(target_path)
+            pickle.dump(note_index,open(note_index_folder+_name, 'wb'))
+
+def get_note_dict():
+    note_to_index = pickle.load(open(dict_path + note_dict_name, 'rb'))
+    index_to_note = pickle.load(open(dict_path + note_index_dict_name, 'rb'))
+    return note_to_index, index_to_note
+
 
 
 def make_chord_dict(chords_folder, num_chords):
@@ -162,9 +187,8 @@ def make_chord_dict(chords_folder, num_chords):
         chord_to_index[chord] = len(chord_to_index)
     index_to_chord = {v: k for k, v in chord_to_index.items()}
     pickle.dump(chord_to_index,open(dict_path + chord_dict_name , 'wb'))
-    pickle.dump(index_to_chord,open(dict_path + index_dict_name , 'wb'))
+    pickle.dump(index_to_chord, open(dict_path + chord_index_dict_name, 'wb'))
     return chord_to_index, index_to_chord
-
 
 def count_chords(chords_folder, num_chords):
     chord_cntr = Counter()
@@ -195,6 +219,32 @@ def count_chords2(chords_folder, num_chords):
                     chord_cntr[chord] = 1                    
     return chord_cntr
 
+def make_note_dict(roll_folder,note_vocab_size):
+    cntr = count_note(roll_folder,note_vocab_size)
+    note_to_idx = dict()
+    note_to_idx[UNK] = 0
+    for note, _ in cntr:
+        note_to_idx[note] = len(note_to_idx)
+    idx_to_note = {v:k for k,v in note_to_idx.items()}
+    pickle.dump(note_to_idx,open(dict_path + note_dict_name, 'wb'))
+    pickle.dump(idx_to_note,open(dict_path + note_index_dict_name, 'wb'))
+    return note_to_idx,idx_to_note
+
+
+def count_note(roll_folder,note_vocab_size):
+    cntr = Counter()
+    for path,_,files in os.walk(roll_folder):
+        for name in files:
+            _path = path.replace('\\', '/') + '/'
+            _name = name.replace('\\', '/')
+            notes = pickle.load(open(_path + _name,'rb'))
+            for note in notes:
+                if note in cntr:
+                    cntr[note] +=1
+                else:
+                    cntr[note] = 1
+    print(len(cntr))
+    return cntr.most_common(n = note_vocab_size - 1)
 
 
 def save_chords_from_histo(histo_folder,chords_folder):
@@ -299,12 +349,16 @@ def do_all_steps():
     
     print('shifting midi files')
     shift_midi_files(song_histo_folder,tempo_folder1,tempo_folder2)
-    
 
     print('making note indexes')
     note_ind_folder(tempo_folder2,roll_folder)
 
-    
+    print('getting note dict')
+    note_to_index,index_to_note = make_note_dict(roll_folder,note_vocab_size)
+
+    print('converting notes to index seq')
+    save_idx_from_notes(roll_folder,note_index_folder)
+
     print('histogramming')
     save_histo_oct_from_midi_folder(tempo_folder2,histo_folder2)
 

@@ -12,6 +12,15 @@ def get_chord_train_and_test_set(train_set_size, test_set_size):
     test_set = data[train_set_size:train_set_size+test_set_size]
     return train_set, test_set
 
+
+def get_note_train_and_test_set(train_set_size,test_set_size):
+    data = make_note_data_set()
+    split = int(train_set_size * len(data) / (train_set_size + test_set_size))
+    train_set = data[:split]
+    test_set = data[split:]
+    return train_set, test_set
+
+
 def get_ind_train_and_test_set(train_set_size, test_set_size):
     data, chord_data = make_ind_data_set()
     train_set = data[:train_set_size]
@@ -84,6 +93,16 @@ def load_data_set(data_string):
     for path in data_string:
         song = pickle.load(open(path, 'rb'))
         data.append(song)
+    return data
+
+def make_note_data_set():
+    data = []
+    for path,_,files in os.walk(note_index_folder):
+        for name in files:
+            _path = path.replace('\\','/') + '/'
+            _name = name.replace('\\','/')
+            song = pickle.load(open(_path + _name,'rb'))
+            data.append(song)
     return data
 
 
