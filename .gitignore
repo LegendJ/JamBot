@@ -16,3 +16,5 @@ predicted_midi/
 
 ## venv
 venv/
+
+*.pyc
