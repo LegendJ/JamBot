@@ -127,8 +127,9 @@ class Embed_Note_SG_Model:
 
         model = keras.models.load_model(model_path)
         model.reset_states()
-        self.weights = model.layers[0].get_weights()[0]
-        self.embed_layer_output = K.function([model.layers[0].input], [model.layers[0].output])
+        self.weights = model.layers[2].get_weights()[0]
+        self.embed_layer_output = K.function([model.layers[2].get_input_at(0),model.layers[2].get_input_at(1)],
+                                             [model.layers[2].get_output_at(0)])
         self.note_to_index, self.index_to_notes = get_note_dict()
 
     def embed_note(self, note):
@@ -148,33 +149,6 @@ if __name__ == "__main__":
     model_name = 'modelEpoch10'
 
     model = Embed_Note_Lstm_Model(model_folder)
-
-    LOG_DIR='/tmp/logs'
-
-    arr_embeds = model.weights
-
-    embedding_ph = tf.placeholder(tf.float32, arr_embeds.shape, name='embedding_place_holder')
-    embedding_var = tf.Variable(tf.zeros(arr_embeds.shape), name='note_embedding')
-    var_init = embedding_var.assign(embedding_ph)
-    summary_writer = tf.summary.FileWriter(LOG_DIR)
-
-    #  Create projector
-    config = projector.ProjectorConfig()
-
-    #  Add embedding to the projector
-    embedding = config.embeddings.add()
-    embedding.tensor_name = embedding_var.name
-    # embedding.metadata_path = path_for_metadata
-    projector.visualize_embeddings(summary_writer, config)
-
-    print("Saving Data")
-    # Save the data
-    sess = tf.InteractiveSession()
-    sess.run(tf.global_variables_initializer())
-    sess.run(var_init, feed_dict={embedding_ph: arr_embeds})
-    saver = tf.train.Saver()
-    saver.save(sess, os.path.join(LOG_DIR, 'note_embedding' + "_model.ckpt"), 1)
-
-    # for i in range(0, 16):
-    #     model.predict_next()
-    # print(model.song)
+    for i in range(0, 16):
+        model.predict_next()
+    print(model.song)
