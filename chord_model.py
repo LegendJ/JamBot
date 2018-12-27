@@ -133,10 +133,11 @@ class Embed_Chord_Model:
 
 if __name__=="__main__":
     # Paths:
-    model_folder = 'models/chords/standart_lr_0.00003/'
-    model_name = 'modelEpoch10'
+    model_folder = 'models/chords/1543368116-Shifted_True_Lr_1e-05_EmDim_10_opt_Adam_bi_False_lstmsize_512_trainsize_4_testsize_1_samples_per_bar8/'
+    model_name = 'model_Epoch10_4'
 
-    model = Chord_Model(model_folder + model_name + '.h5', prediction_mode='sampling')
+    model = Embed_Chord_Model(model_folder + model_name + '.pickle')
+    embedding = model.embed_chord(1)
     for i in range(0, 16):
         model.predict_next()
     print(model.song)

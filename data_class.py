@@ -20,6 +20,9 @@ def get_note_train_and_test_set(train_set_size,test_set_size):
     test_set = data[split:]
     return train_set, test_set
 
+def get_all_notes():
+    data = make_note_data_set()
+    return [i for item in data for i in item]
 
 def get_ind_train_and_test_set(train_set_size, test_set_size):
     data, chord_data = make_ind_data_set()
@@ -119,7 +122,7 @@ def make_chord_data_set():
 
 def make_data_set():
     data = []
-    for path, subdirs, files in os.walk(tempo_folder):
+    for path, subdirs, files in os.walk(tempo_folder2):
         for name in files:
             _path = path.replace('\\', '/') + '/'
             _name = name.replace('\\', '/')

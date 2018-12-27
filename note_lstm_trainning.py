@@ -21,6 +21,7 @@ import time
 
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
+from keras.callbacks import TensorBoard
 
 # Uncomment next block if you only want to use a fraction of the GPU memory:
 
@@ -62,6 +63,17 @@ if not os.path.exists(model_path):
 
 print('loading data...')
 train_set, test_set = data_class.get_note_train_and_test_set(train_set_size, test_set_size)
+
+
+tbCallBack = TensorBoard(log_dir='/tmp/logs',  # log 目录
+                         histogram_freq=0,  # 按照何等频率（epoch）来计算直方图，0为不计算
+                         write_graph=True,  # 是否存储网络结构图
+                         write_grads=True,  # 是否可视化梯度直方图
+                         write_images=True,  # 是否可视化参数
+                         embeddings_freq=5,
+                         embeddings_layer_names='embedding',
+                         embeddings_data=np.arange(0,note_vocab_size).reshape(note_vocab_size,1))
+
 print('creating model...')
 model = Sequential()
 model.add(Embedding(note_vocab_size, note_embedding_dim, input_length=step_size, name="embedding",
@@ -114,6 +126,7 @@ def test():
     pickle.dump(total_train_loss_array, open(model_path + 'total_train_loss_array.pickle', 'wb'))
 
 
+
 def train():
     print('training model...')
     total_train_loss = 0
@@ -126,10 +139,10 @@ def train():
             # bar.start()
             X = song[:-1]
             Y = np_utils.to_categorical(song[1:], num_classes=note_vocab_size)
-            hist = model.fit(X, Y, batch_size=batch_size, shuffle=False, verbose=verbose)
+            hist = model.fit(X, Y, batch_size=batch_size, shuffle=False, verbose=verbose,callbacks=[tbCallBack])
             model.reset_states()
             bar.update(i + 1)
-            #            print(hist.history)
+            print(hist.history)
             total_train_loss += hist.history['loss'][0]
             if (i + 1) % test_step is 0:
                 total_train_loss = total_train_loss / test_step
@@ -141,6 +154,7 @@ def train():
             print('saving model')
             model_save_path = model_path + 'model_' + 'Epoch' + str(e) + '_' + str(i + 1) + model_filetype
             model.save(model_save_path)
+            pickle.dump(model.layers[0].get_weights()[0],open(model_path+'embedding_' + 'Epoch' + str(e)+'_' + str(i + 1) + model_filetype,'wb'))
 
 
 def save_params():
@@ -149,14 +163,13 @@ def save_params():
         text_file.write("train_set_size: %s" % train_set_size + '\n')
         text_file.write("test_set_size: %s" % test_set_size + '\n')
         text_file.write("lstm_size: %s" % lstm_size + '\n')
-        text_file.write("embedding_dim: %s" % chord_embedding_dim + '\n')
+        text_file.write("embedding_dim: %s" % note_embedding_dim + '\n')
         text_file.write("learning_rate: %s" % learning_rate + '\n')
         # text_file.write("save_step: %s" % save_step + '\n')
         text_file.write("shuffle_train_set: %s" % shuffle_train_set + '\n')
         text_file.write("test_step: %s" % test_step + '\n')
         text_file.write("bidirectional: %s" % bidirectional + '\n')
-        text_file.write("num_chords: %s" % num_chords + '\n')
-        text_file.write("chord_n: %s" % chord_n + '\n')
+        text_file.write("num_chords: %s" % note_vocab_size + '\n')
 
 
 print("saving params")
